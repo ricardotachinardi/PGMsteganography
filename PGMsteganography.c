@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -23,7 +24,7 @@ int DecimalToBinaryInt(int decimal)
     return (decimal % 2) + 10 * DecimalToBinaryInt(decimal / 2);
 }
 
-void DecimalToBinaryArray(int decimal, int asciibinaryarray[8]) 
+void DecimalToBinaryArray(int decimal, int asciibinaryarray[7]) 
 {
     /* turn a "decimal int" into a "binary int", slice the "binary int" into a "8bitish binary array", returning it */
     /* example: decimal int 103 converted to a binary int 1100111 and then converted into a 8bitish binary array [0, 1, 1, 0, 0, 1, 1, 1] */
@@ -33,7 +34,7 @@ void DecimalToBinaryArray(int decimal, int asciibinaryarray[8])
 
     binaryint = DecimalToBinaryInt(decimal);
 
-    for (i = 0; i < 9; i++)
+    for (i = 0; i < 8; i++)
     {
         asciibinaryarray[i] = 0;
     }
@@ -61,7 +62,7 @@ int Pow(int base, int exponent)
 }
 
 
-int ReadPGM(char archivename[FNMAX], int M[MAX][MAX], int *pm, int *pn, int *pmax)
+int LeDesenho(char nomearq[FNMAX], int M[MAX][MAX], int *pm, int *pn, int *pmax)
 {
     FILE* fp;
     char firstchar[MAX];
@@ -70,12 +71,12 @@ int ReadPGM(char archivename[FNMAX], int M[MAX][MAX], int *pm, int *pn, int *pma
     int holder;
 
 
-    scanf(" %[^\n]", archivename);
+    scanf(" %[^\n]", nomearq);
     
 
-    if (!(fp = fopen(archivename, "r"))) 
+    if (!(fp = fopen(nomearq, "r"))) 
     {
-    printf("Error when opening the file %s\n", archivename);
+    printf("Erro ao abrir o arquivo %s\n", nomearq);
     return 1;
     }
 
@@ -105,18 +106,19 @@ int ReadPGM(char archivename[FNMAX], int M[MAX][MAX], int *pm, int *pn, int *pma
     return 0;
 }
 
-int ReadTXT(char archivename[FNMAX], char T[MAX2], int *pk)
+int LeTexto(char nomearq[FNMAX], char T[MAX2], int *pk)
 {
     FILE* fp;
     char characterholder;
 
     *pk = 0;
 
-    scanf(" %[^\n]", archivename);
+    scanf(" %[^\n]", nomearq);
 
-    if (!(fp = fopen(archivename, "r"))) 
+    if (!(fp = fopen(nomearq, "r"))) 
     {
-    printf("Error when opening the file %s\n", archivename);    return 1;
+    printf("Erro ao abrir o arquivo %s\n", nomearq);
+    return 1;
     }
 
     while((characterholder = fgetc(fp)) != EOF)
@@ -187,20 +189,21 @@ int BeDe(int k, int m, int n, int *pb, int *pd)
     return 0;
 }
 
-int NextBBits(char T[MAX2], int b, int *pik, int *pib)
+int ProximosBBits(char T[MAX2], int b, int *pik, int *pib)
 {
     int asciidecimal;
     int asciibinaryarray[8];
     int i;
-    int nextbits;
+    int proximos;
 
     asciidecimal = (int)T[*pik];
-    nextbits = 0;
+    proximos = 0;
 
     DecimalToBinaryArray(asciidecimal, asciibinaryarray);
+
     for (i = 1; i <= b; i++)
     {
-        nextbits += asciibinaryarray[8-(*pib)-i]*(Pow(2, i-1));
+        proximos += asciibinaryarray[8-(*pib)-i]*(Pow(2, i-1));
     }
 
     *pib += b;
@@ -212,11 +215,10 @@ int NextBBits(char T[MAX2], int b, int *pik, int *pib)
     }
 
 
-
-    return nextbits;
+    return proximos;
 }
 
-void Encode(int D[MAX][MAX], int m, int n, char T[MAX2], int k, int Dl[MAX][MAX], int b, int d, int mode)
+void Codifica(int D[MAX][MAX], int m, int n, char T[MAX2], int k, int Dl[MAX][MAX], int b, int d, int modo)
 {
     int i;
     int j;
@@ -249,9 +251,9 @@ void Encode(int D[MAX][MAX], int m, int n, char T[MAX2], int k, int Dl[MAX][MAX]
     
     Dl[d-1][d-1] = (((D[(d)-1][(d)-1] / B) * B) + ((D[(d)-1][(d)-1] + b + 256) % B));
     
-    if(mode == 1)
+    if(modo == 1)
     {
-    printf("(%d, %d) bits %d original %02x encoded %02x\n", d-1, d-1, b, D[d-1][d-1], Dl[d-1][d-1]);
+    printf("(%d, %d) bits %d original %02x codificado %02x\n", d-1, d-1, b, D[d-1][d-1], Dl[d-1][d-1]);
     }
 
     kcounter = 0;
@@ -266,20 +268,20 @@ void Encode(int D[MAX][MAX], int m, int n, char T[MAX2], int k, int Dl[MAX][MAX]
         {
             if(flag == 1)
             {
-                bits = NextBBits(T, b, pik, pib);   
+                bits = ProximosBBits(T, b, pik, pib);   
                 Dl[(i*d)-1][(j*d)-1] = (((D[(i*d)-1][(j*d)-1] / B) * B) + ((D[(i*d)-1][(j*d)-1] + bits + 256) % B));
-                if(mode == 1)
+             if(modo == 1)
                 {    
                     if (secondflag == 0)
                     {
-                        printf("(%d, %d) bits %d original %02x encoded %02x\n", ((i*d)-1), ((j*d)-1), bits, D[(i*d)-1][(j*d)-1], Dl[(i*d)-1][(j*d)-1]);
+                        printf("(%d, %d) bits %d original %d codificado %d\n", ((i*d)-1), ((j*d)-1), bits, D[(i*d)-1][(j*d)-1], Dl[(i*d)-1][(j*d)-1]);
                         kcounter += 1;
                         if(kcounter == k*(8/b))
                         {
                             secondflag = 1;
                         }
                     }
-                }
+                }   
             }
             flag = 1;
         }
@@ -287,7 +289,7 @@ void Encode(int D[MAX][MAX], int m, int n, char T[MAX2], int k, int Dl[MAX][MAX]
     }
 }
 
-int MatrixMaxVal(int D[MAX][MAX], int m, int n)
+int Maximo(int D[MAX][MAX], int m, int n)
 {
     int i;
     int j;
@@ -309,17 +311,17 @@ int MatrixMaxVal(int D[MAX][MAX], int m, int n)
     return matrixmaxval;
 }
 
-int WritePGM(char archivename[FNMAX], int M[MAX][MAX], int m, int n, int max)
+int EscreveDesenho(char nomearq[FNMAX], int M[MAX][MAX], int m, int n, int max)
 {
     FILE* fp;
     int i;
     int j;
 
-    scanf(" %[^\n]", archivename);
+    scanf(" %[^\n]", nomearq);
 
-    if (!(fp = fopen(archivename, "w"))) 
+    if (!(fp = fopen(nomearq, "w"))) 
     {
-    printf("Error when writing on the file %s\n", archivename);    
+    printf("Erro ao escrever no arquivo %s\n", nomearq);
     return 1;
     }
 
@@ -385,7 +387,7 @@ int DeBeDe(int D[MAX][MAX], int Dl[MAX][MAX], int m, int n, int *pb, int *pd)
     return 0;
 }
 
-int Decode(int D[MAX][MAX], int Dl[MAX][MAX], int m, int n, int b, int d, char T[MAX2], int mode)
+int DeCodifica(int D[MAX][MAX], int Dl[MAX][MAX], int m, int n, int b, int d, char T[MAX2], int modo)
 {
     int ik;
     int holder;
@@ -532,7 +534,7 @@ int Decode(int D[MAX][MAX], int Dl[MAX][MAX], int m, int n, int b, int d, char T
     secondflag = 0;
     kcounter = 0;
 
-    if(mode == 1)
+    if(modo == 1)
     {
         for (im = 1; im <= m/d; im++)
         {
@@ -562,16 +564,16 @@ int Decode(int D[MAX][MAX], int Dl[MAX][MAX], int m, int n, int b, int d, char T
     return k;
 }
 
-int WriteTXT(char archivename[FNMAX], char T[MAX2], int k)
+int EscreveTexto(char nomearq[FNMAX], char T[MAX2], int k)
 {
     FILE* fp;
     int i;
 
-    scanf(" %[^\n]", archivename);
+    scanf(" %[^\n]", nomearq);
 
-    if (!(fp = fopen(archivename, "w"))) 
+    if (!(fp = fopen(nomearq, "w"))) 
     {
-    printf("Error when writing on the file %s\n", archivename);
+    printf("Erro ao abrir o arquivo %s\n", nomearq);
     return 1;
     }
 
@@ -588,7 +590,7 @@ int WriteTXT(char archivename[FNMAX], char T[MAX2], int k)
 
 int main()
 {
-    char archivename[FNMAX];
+    char nomearq[FNMAX];
     char T[MAX2];
     int D[MAX][MAX];
     int Dl[MAX][MAX];
@@ -599,7 +601,7 @@ int main()
     int k;
     int b;
     int d;
-    int mode;
+    int modo;
     int flag;
     int scanned;
     int originalmax;
@@ -623,40 +625,40 @@ int main()
     
     secondflag = 0;
     flag = 0;
-    mode = 0;
+    modo = 0;
 
     while (secondflag == 0)
     {
         while(flag == 0)
         {
-            printf("\nType the desired operation:\n");
-            printf("    1. Encode\n");
-            printf("    2. Decode\n");
-            printf("    3. Show TXT\n");
-            if(mode == 0)
+            printf("\nDigite a operacao desejada:\n");
+            printf("    1. Codificar\n");
+            printf("    2. Decodificar\n");
+            printf("    3. Mostrar mensagem\n");
+            if(modo == 0)
             {
-                printf("    4. Activate debug mode\n");
+                printf("    4. Ativar modo verborragico\n");
             }
-            if(mode == 1)
+            if(modo == 1)
             {
-                printf("    4. Deactivate debug mode\n");
+                printf("    4. Desativar modo verborragico\n");
             }
-            printf("    0. Close Program\n");
+            printf("    0. Finalizar\n");
 
-            printf("\nOPTION: ");
+            printf("\nOPCAO: ");
             scanf("%d", &scanned);
 
             if(scanned == 4)
             {
-                if(mode == 1)
+                if(modo == 1)
                 {
-                    printf("Debug mode deactivated\n");
-                    mode = 0;
+                    printf("Modo verborragico desativado\n");
+                    modo = 0;
                 }
                 else
                 {
-                    printf("Debug mode activated\n");
-                    mode = 1;
+                    printf("Modo verborragico ativado\n");
+                    modo = 1;
                 }
 
             }
@@ -670,17 +672,17 @@ int main()
 
             if(scanned == 1)
             {
-                printf("Archive that contains the original PGM: ");
+                printf("Arquivo que contem o desenho orginal: ");
 
-                if(ReadPGM(archivename, D, pm, pn, pmax) == 1)
+                if(LeDesenho(nomearq, D, pm, pn, pmax) == 1)
                 {
                     break;
                 } 
     
 
-                printf("Archive that contains the archive to be hidden: ");
+                printf("Arquivo que contem a mensagem a ser ocultada: ");
                 
-                if(ReadTXT(archivename, T, pk) == 1)
+                if(LeTexto(nomearq, T, pk) == 1)
                 {
                     break;
                 }
@@ -691,12 +693,12 @@ int main()
                 BeDe(k, m, n, pb, pd);
                 printf("b = %d, d = %d\n", b, d);
 
-                Encode(D, m, n, T, k, Dl, b, d, mode);
+                Codifica(D, m, n, T, k, Dl, b, d, modo);
 
-                printf("Save encoded PGM as: ");
+                printf("Gravar desenho esteganografado em: ");
 
-                originalmax = MatrixMaxVal(D, m, n);
-                encodedmax = MatrixMaxVal(Dl, m, n);
+                originalmax = Maximo(D, m, n);
+                encodedmax = Maximo(Dl, m, n);
                 if(originalmax > encodedmax)
                 {
                     max = originalmax;
@@ -707,7 +709,7 @@ int main()
                 }
 
 
-                if(WritePGM(archivename, Dl, m, n, max) == 1)
+                if(EscreveDesenho(nomearq, Dl, m, n, max) == 1)
                 {
                     break;
                 }
@@ -716,24 +718,24 @@ int main()
 
             if(scanned == 2)
             {
-                printf("Archive that contains the original PGM: ");
+                printf("Arquivo que contem o desenho orginal: ");
                 
-                if(ReadPGM(archivename, D, pm, pn, pmax) == 1)
+                if(LeDesenho(nomearq, D, pm, pn, pmax) == 1)
                 {
                     break;
                 }
 
-                printf("Archive that contains the encoded PGM ");
+                printf("Arquivo que contem o desenho esteganografado: ");
                 
-                if(ReadPGM(archivename, Dl, pm, pn, pmax) == 1)
+                if(LeDesenho(nomearq, Dl, pm, pn, pmax) == 1)
                 {
                     break;
                 }
 
-                k = Decode(D, Dl, m, n, b, d, T, mode);
+                k = DeCodifica(D, Dl, m, n, b, d, T, modo);
 
-                printf("Save decoded message as: ");
-                if(WriteTXT(archivename, T, k) == 1)
+                printf("Gravar mensagem decodificada em: ");
+                if(EscreveTexto(nomearq, T, k) == 1)
                 {
                     break;
                 }
@@ -741,15 +743,15 @@ int main()
 
             if(scanned == 3)
             {
-                printf("Archive that contains the TXT: ");
+                printf("Arquivo que contem a mensagem: ");
                 
-                if(ReadTXT(archivename, T, pk) ==  1)
+                if(LeTexto(nomearq, T, pk) ==  1)
                 {
                     break;
                 }
 
                 printf("k = %d\n", k);
-                printf("MESSAGE: (everything between ---> and <---)\n");
+                printf("MENSAGEM contida no arquivo msg1.txt (tudo entre ---> e <---)\n");
                 printf("--->");
 
                 for (i = 0; i < k; i++)
